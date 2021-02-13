@@ -1,0 +1,77 @@
+---
+title: "DC WhatsApp Assignment"
+author: "Surendra Dattatrey"
+Location: "Delhi NCR"
+date: "19 March 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+We gathered lots of whats app Data for almost 1.5 weeks. and try to get some information about travel stories,  which was unknown to me till now.
+
+```{r cars}
+rm(list = ls())
+
+require("ggmap")||install.packages("ggmap")
+require("gsubfn")||install.packages("gsubfn")
+
+library("ggmap")
+
+##Extracting chat data 
+
+chat_detail = readLines("G:\\chat.txt")
+
+#Finding line# which contains Location Data
+
+location = grep("location:",chat_detail)
+# creating a blank Dataframe
+df = data.frame(NULL)
+
+# Looping throuugh the all lines of the file
+
+for  (l in location){
+  txt = chat_detail[l]
+  split = strsplit(txt,"https://maps.google.com/\\?q=")  # Notice \\? in the pattern
+  dateloc = split[[1]][1]
+  loc = split[[1]][2]
+  lat = strsplit(loc,",")[[1]][1]
+  long = strsplit(loc,",")[[1]][2]
+  name = gsub(": location: |^\\s+","",strsplit(dateloc,' ')[[1]][3])
+  # gsub("-|:|^\\s+","",strapplyc(dateloc,"-.*?:"))     # from gsubfn
+  date = strsplit(strsplit(dateloc,'-')[[1]][1],",")[[1]][1]
+  description = strsplit(chat_detail[l+1],": ")[[1]][3]
+  dft = data.frame(name,date,lat,long,description, stringsAsFactors = F)
+  df = rbind(df,dft)
+}
+
+df$lat = as.numeric(df$lat)
+df$long = as.numeric(df$long)
+
+my_location = df[df$name == "Surendra",]
+
+theme_set(theme_bw(8))
+mylocationMap <- qmap(location = "Qutab Minar", zoom = 8, color = "bw", legend = "topleft")
+
+mylocationMaps <- qmap(location = "Qutab Minar", zoom = 8,  scale = 5000, maptype = "toner-lite", legend = "topleft")
+
+mylocationMaps <- qmap(location = "Qutab Minar", zoom = 8,  scale = 5000, maptype = "toner-lite", legend = "topleft")
+
+
+```
+
+## Including Plots
+
+My Travel Interesting Stories:
+
+With the whatsapp chat history, I saw an interesting stories about my travel that i didn't travel much (You can see the whats app data) so can certainly say "I am not a Travel person". I can see that my preferred way of commuting is public transport (Being in Delhi NCR, Metro is best public transport), so contributing to the environment.
+
+
+```{r pressure, echo=FALSE}
+mylocationMaps +  geom_point(aes(x = long, y = lat, colour = description), data = my_location)
+```
+
+
